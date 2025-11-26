@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
         
         if (startTile != null)
         {
-            gridManager.PlaceTile(startTile, Vector2Int.zero, 0);
+            gridManager.PlaceTile(startTile, Vector2Int.zero, 0, Color.white);
         }
         
         DrawTile();
@@ -127,7 +127,7 @@ public class GameManager : MonoBehaviour
             return false;
         }
         
-        PlacedTile placed = gridManager.PlaceTile(currentTile, position, currentRotation);
+        PlacedTile placed = gridManager.PlaceTile(currentTile, position, currentRotation, CurrentPlayer.playerColor);
         
         if (placed != null)
         {

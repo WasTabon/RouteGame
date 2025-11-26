@@ -20,9 +20,16 @@ public class GridManager : MonoBehaviour
         ClearGridSlots();
     }
     
-    public PlacedTile PlaceTile(TileData tileData, Vector2Int position, int rotation)
+    public PlacedTile PlaceTile(TileData tileData, Vector2Int position, int rotation, Color playerColor = default)
     {
         if (placedTiles.ContainsKey(position)) return null;
+        
+        GameObject bgObj = new GameObject($"TileBackground_{position.x}_{position.y}");
+        bgObj.transform.SetParent(gridContainer);
+        RectTransform bgRect = bgObj.AddComponent<RectTransform>();
+        bgRect.anchoredPosition = GridToUIPosition(position);
+        bgRect.sizeDelta = new Vector2(tileSize, tileSize);
+        Image bgImage = bgObj.AddComponent<Image>();
         
         GameObject tileObj = Instantiate(tilePrefab, gridContainer);
         RectTransform rect = tileObj.GetComponent<RectTransform>();
@@ -31,7 +38,8 @@ public class GridManager : MonoBehaviour
         
         PlacedTile tile = tileObj.GetComponent<PlacedTile>();
         if (tile == null) tile = tileObj.AddComponent<PlacedTile>();
-        tile.Initialize(tileData, position, rotation);
+        tile.Initialize(tileData, position, rotation, playerColor);
+        tile.SetBackgroundImage(bgImage);
         
         placedTiles[position] = tile;
         
