@@ -727,6 +727,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0d9bf522d0335b647b5b837cc119a7ec, type: 2}
   - {fileID: 11400000, guid: b326cf1e04b88b543ad05440764d2676, type: 2}
   - {fileID: 11400000, guid: 6883e3b314b88004c86937c47710b67a, type: 2}
+  - {fileID: 11400000, guid: 5c55aa28a2867644b8427718852cad45, type: 2}
   - {fileID: 11400000, guid: 214ecce30ec6f4b4a946ace3aaeadf2f, type: 2}
   straightCount: 20
   turnCount: 15

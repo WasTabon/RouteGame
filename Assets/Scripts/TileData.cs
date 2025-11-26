@@ -15,7 +15,13 @@ public enum TileType
     Turn,
     TJunction,
     Crossroad,
-    DeadEnd
+    DeadEnd,
+    DoubleStraight,
+    STurn,
+    YJunction,
+    DiagonalCross,
+    TripleJunction,
+    Roundabout
 }
 
 [CreateAssetMenu(fileName = "TileData", menuName = "711Route/TileData")]
