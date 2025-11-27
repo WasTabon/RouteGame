@@ -2708,7 +2708,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfb117b47f3865344bcc6888f7c85307, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  multiplayerProductId: com.yourcompany.711route.multiplayer
+  multiplayerProductId: com.inapp.gamemodefor2
 --- !u!4 &579139145
 Transform:
   m_ObjectHideFlags: 0

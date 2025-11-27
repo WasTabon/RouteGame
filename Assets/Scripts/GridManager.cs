@@ -11,13 +11,32 @@ public class GridManager : MonoBehaviour
     
     private Dictionary<Vector2Int, PlacedTile> placedTiles = new Dictionary<Vector2Int, PlacedTile>();
     private Dictionary<Vector2Int, GameObject> gridSlots = new Dictionary<Vector2Int, GameObject>();
+    private List<GameObject> tileObjects = new List<GameObject>();
     
     public Dictionary<Vector2Int, PlacedTile> PlacedTiles => placedTiles;
     
     public void Initialize()
     {
-        placedTiles.Clear();
+        ClearAllTiles();
         ClearGridSlots();
+        placedTiles.Clear();
+    }
+    
+    private void ClearAllTiles()
+    {
+        foreach (var obj in tileObjects)
+        {
+            if (obj != null) Destroy(obj);
+        }
+        tileObjects.Clear();
+        
+        foreach (var tile in placedTiles.Values)
+        {
+            if (tile != null && tile.gameObject != null)
+            {
+                Destroy(tile.gameObject);
+            }
+        }
     }
     
     public PlacedTile PlaceTile(TileData tileData, Vector2Int position, int rotation, Color playerColor = default)
@@ -30,11 +49,13 @@ public class GridManager : MonoBehaviour
         bgRect.anchoredPosition = GridToUIPosition(position);
         bgRect.sizeDelta = new Vector2(tileSize, tileSize);
         Image bgImage = bgObj.AddComponent<Image>();
+        tileObjects.Add(bgObj);
         
         GameObject tileObj = Instantiate(tilePrefab, gridContainer);
         RectTransform rect = tileObj.GetComponent<RectTransform>();
         rect.anchoredPosition = GridToUIPosition(position);
         rect.sizeDelta = new Vector2(tileSize, tileSize);
+        tileObjects.Add(tileObj);
         
         PlacedTile tile = tileObj.GetComponent<PlacedTile>();
         if (tile == null) tile = tileObj.AddComponent<PlacedTile>();
@@ -65,7 +86,6 @@ public class GridManager : MonoBehaviour
             {
                 hasNeighbor = true;
                 
-                Direction toNeighbor = (Direction)i;
                 Direction fromNeighbor = (Direction)((i + 2) % 4);
                 
                 bool thisHasExit = exits[i];

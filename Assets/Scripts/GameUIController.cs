@@ -5,9 +5,6 @@ using System.Collections.Generic;
 
 public class GameUIController : MonoBehaviour
 {
-    [Header("Game Panel")]
-    [SerializeField] private Button exitToMenuButton;
-    
     [Header("Current Tile Preview")]
     [SerializeField] private Image currentTileImage;
     [SerializeField] private RectTransform currentTileTransform;
@@ -58,9 +55,26 @@ public class GameUIController : MonoBehaviour
     private Dictionary<Player, TextMeshProUGUI> playerScoreTexts = new Dictionary<Player, TextMeshProUGUI>();
     private bool isVsBotMode;
     
-    private void Start()
+    private void Awake()
     {
         gameManager = GameManager.Instance;
+        if (gameManager == null)
+        {
+            gameManager = FindObjectOfType<GameManager>();
+        }
+    }
+    
+    private void Start()
+    {
+        if (gameManager == null)
+        {
+            gameManager = GameManager.Instance;
+            if (gameManager == null)
+            {
+                gameManager = FindObjectOfType<GameManager>();
+            }
+        }
+        
         deckManager = FindObjectOfType<DeckManager>();
         iapManager = IAPManager.Instance;
         
@@ -97,9 +111,6 @@ public class GameUIController : MonoBehaviour
         
         if (restartButton != null)
             restartButton.onClick.AddListener(OnRestartGame);
-        
-        if (exitToMenuButton != null)
-            exitToMenuButton.onClick.AddListener(OnRestartGame);
     }
     
     private void SubscribeToEvents()
@@ -205,14 +216,14 @@ public class GameUIController : MonoBehaviour
     
     private void OnRotateLeft()
     {
-        if (gameManager.IsBotTurn) return;
+        if (gameManager == null || gameManager.IsBotTurn || gameManager.IsBotThinking) return;
         gameManager.RotateTileCounterClockwise();
         UpdateTilePreview();
     }
     
     private void OnRotateRight()
     {
-        if (gameManager.IsBotTurn) return;
+        if (gameManager == null || gameManager.IsBotTurn || gameManager.IsBotThinking) return;
         gameManager.RotateTile();
         UpdateTilePreview();
     }
@@ -279,6 +290,11 @@ public class GameUIController : MonoBehaviour
         
         if (botThinkingIndicator != null)
             botThinkingIndicator.SetActive(false);
+        
+        if (rotateLeftButton != null)
+            rotateLeftButton.interactable = true;
+        if (rotateRightButton != null)
+            rotateRightButton.interactable = true;
     }
     
     private void ShowEndPanel(Player winner)
