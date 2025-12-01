@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class GameUIController : MonoBehaviour
 {
+    [SerializeField] private Button menuButton;
+    
     [Header("Current Tile Preview")]
     [SerializeField] private Image currentTileImage;
     [SerializeField] private RectTransform currentTileTransform;
@@ -111,6 +113,9 @@ public class GameUIController : MonoBehaviour
         
         if (restartButton != null)
             restartButton.onClick.AddListener(OnRestartGame);
+        
+        if (menuButton != null)
+            menuButton.onClick.AddListener(OnRestartGame);
     }
     
     private void SubscribeToEvents()
