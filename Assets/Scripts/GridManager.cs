@@ -44,8 +44,10 @@ public class GridManager : MonoBehaviour
         if (placedTiles.ContainsKey(position)) return null;
         
         GameObject bgObj = new GameObject($"TileBackground_{position.x}_{position.y}");
-        bgObj.transform.SetParent(gridContainer);
+        bgObj.transform.SetParent(gridContainer, false);
         RectTransform bgRect = bgObj.AddComponent<RectTransform>();
+        bgRect.anchorMin = new Vector2(0.5f, 0.5f);
+        bgRect.anchorMax = new Vector2(0.5f, 0.5f);
         bgRect.anchoredPosition = GridToUIPosition(position);
         bgRect.sizeDelta = new Vector2(tileSize, tileSize);
         Image bgImage = bgObj.AddComponent<Image>();
