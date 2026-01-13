@@ -134,7 +134,8 @@ public class GameUIController : MonoBehaviour
     private void SubscribeToIAPEvents()
     {
         if (iapManager == null) return;
-        
+    
+        iapManager.OnInitializationCompleted += UpdatePurchaseUI;
         iapManager.OnPurchaseCompleted += HandlePurchaseComplete;
         iapManager.OnPurchaseError += HandlePurchaseFailed;
         iapManager.OnRestoreCompleted += HandleRestoreComplete;
@@ -318,26 +319,38 @@ public class GameUIController : MonoBehaviour
     
     private void UpdatePurchaseUI()
     {
+        bool isInitialized = iapManager != null && iapManager.IsInitialized;
         bool isUnlocked = iapManager != null && iapManager.IsMultiplayerUnlocked;
-        
+    
+        // Блокируем кнопку пока не инициализировано
+        if (vsPlayersButton != null)
+        {
+            vsPlayersButton.interactable = isInitialized || isUnlocked;
+        }
+    
         if (vsPlayersButtonText != null)
         {
             if (isUnlocked)
             {
                 vsPlayersButtonText.text = "VS Players";
             }
+            else if (!isInitialized)
+            {
+                vsPlayersButtonText.text = "Loading...";
+            }
             else
             {
-                string price = iapManager != null ? iapManager.GetMultiplayerPrice() : "";
+                string price = iapManager.GetMultiplayerPrice();
                 vsPlayersButtonText.text = string.IsNullOrEmpty(price) ? "VS Players (Premium)" : $"VS Players ({price})";
             }
         }
-        
+    
         if (restorePurchaseButton != null)
         {
             restorePurchaseButton.gameObject.SetActive(!isUnlocked);
+            restorePurchaseButton.interactable = isInitialized;
         }
-        
+    
         if (purchaseStatusText != null)
         {
             purchaseStatusText.text = isUnlocked ? "Multiplayer Unlocked!" : "";

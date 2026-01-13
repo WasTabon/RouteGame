@@ -19,6 +19,8 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
     public event Action<string> OnPurchaseError;
     public event Action OnRestoreCompleted;
     
+    public event Action OnInitializationCompleted;
+    
     private const string MULTIPLAYER_UNLOCKED_KEY = "MultiplayerUnlocked";
     
     private void Awake()
@@ -35,7 +37,7 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
             Destroy(gameObject);
         }
     }
-    
+
     private void LoadPurchaseState()
     {
         IsMultiplayerUnlocked = PlayerPrefs.GetInt(MULTIPLAYER_UNLOCKED_KEY, 0) == 1;
@@ -57,13 +59,15 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
         UnityPurchasing.Initialize(this, builder);
     }
     
+    
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
         storeController = controller;
         extensionProvider = extensions;
-        
+    
         CheckExistingPurchases();
-        
+        OnInitializationCompleted?.Invoke();
+    
         Debug.Log("IAP initialized successfully");
     }
     
