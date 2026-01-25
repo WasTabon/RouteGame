@@ -33,8 +33,6 @@ public class GameUIController : MonoBehaviour
     [Header("Mode Select Panel")]
     [SerializeField] private Button vsBotButton;
     [SerializeField] private Button vsPlayersButton;
-    [SerializeField] private TextMeshProUGUI vsPlayersButtonText;
-    [SerializeField] private Button restorePurchaseButton;
     [SerializeField] private TextMeshProUGUI purchaseStatusText;
     
     [Header("Player Setup Panel")]
@@ -85,7 +83,6 @@ public class GameUIController : MonoBehaviour
         SubscribeToIAPEvents();
         
         ShowModeSelectPanel();
-        UpdatePurchaseUI();
     }
     
     private void SetupButtons()
@@ -101,9 +98,6 @@ public class GameUIController : MonoBehaviour
         
         if (vsPlayersButton != null)
             vsPlayersButton.onClick.AddListener(OnVsPlayersSelected);
-        
-        if (restorePurchaseButton != null)
-            restorePurchaseButton.onClick.AddListener(OnRestorePurchase);
         
         if (startButton != null)
             startButton.onClick.AddListener(OnStartGame);
@@ -134,11 +128,10 @@ public class GameUIController : MonoBehaviour
     private void SubscribeToIAPEvents()
     {
         if (iapManager == null) return;
-    
-        iapManager.OnInitializationCompleted += UpdatePurchaseUI;
-        iapManager.OnPurchaseCompleted += HandlePurchaseComplete;
-        iapManager.OnPurchaseError += HandlePurchaseFailed;
-        iapManager.OnRestoreCompleted += HandleRestoreComplete;
+        
+        iapManager.OnPurchaseSuccess += HandlePurchaseSuccess;
+        iapManager.OnPurchaseError += HandlePurchaseError;
+        iapManager.OnRestoreComplete += HandleRestoreComplete;
     }
     
     private void OnDestroy()
@@ -156,9 +149,9 @@ public class GameUIController : MonoBehaviour
         
         if (iapManager != null)
         {
-            iapManager.OnPurchaseCompleted -= HandlePurchaseComplete;
-            iapManager.OnPurchaseError -= HandlePurchaseFailed;
-            iapManager.OnRestoreCompleted -= HandleRestoreComplete;
+            iapManager.OnPurchaseSuccess -= HandlePurchaseSuccess;
+            iapManager.OnPurchaseError -= HandlePurchaseError;
+            iapManager.OnRestoreComplete -= HandleRestoreComplete;
         }
     }
     
@@ -182,12 +175,14 @@ public class GameUIController : MonoBehaviour
     
     private void OnVsPlayersSelected()
     {
-        if (iapManager != null && !iapManager.IsMultiplayerUnlocked)
+        if (iapManager != null && iapManager.IsMultiplayerUnlocked)
         {
-            iapManager.PurchaseMultiplayer();
-            return;
+            OpenPlayerSetup();
         }
-        
+    }
+    
+    private void OpenPlayerSetup()
+    {
         isVsBotMode = false;
         ShowPlayerSetupPanel();
         
@@ -202,17 +197,6 @@ public class GameUIController : MonoBehaviour
         
         if (playerNameInput != null)
             playerNameInput.gameObject.SetActive(false);
-    }
-    
-    private void OnRestorePurchase()
-    {
-        if (iapManager != null)
-        {
-            if (purchaseStatusText != null)
-                purchaseStatusText.text = "Restoring...";
-            
-            iapManager.RestorePurchases();
-        }
     }
     
     private void OnBackToModeSelect()
@@ -274,7 +258,7 @@ public class GameUIController : MonoBehaviour
         if (gamePanel != null) gamePanel.SetActive(false);
         if (endPanel != null) endPanel.SetActive(false);
         
-        UpdatePurchaseUI();
+        UpdatePurchaseStatus();
     }
     
     private void ShowPlayerSetupPanel()
@@ -317,73 +301,37 @@ public class GameUIController : MonoBehaviour
         }
     }
     
-    private void UpdatePurchaseUI()
+    private void UpdatePurchaseStatus()
     {
-        bool isInitialized = iapManager != null && iapManager.IsInitialized;
+        if (purchaseStatusText == null) return;
+        
         bool isUnlocked = iapManager != null && iapManager.IsMultiplayerUnlocked;
-    
-        // Блокируем кнопку пока не инициализировано
-        if (vsPlayersButton != null)
-        {
-            vsPlayersButton.interactable = isInitialized || isUnlocked;
-        }
-    
-        if (vsPlayersButtonText != null)
-        {
-            if (isUnlocked)
-            {
-                vsPlayersButtonText.text = "VS Players";
-            }
-            else if (!isInitialized)
-            {
-                vsPlayersButtonText.text = "Loading...";
-            }
-            else
-            {
-                string price = iapManager.GetMultiplayerPrice();
-                vsPlayersButtonText.text = string.IsNullOrEmpty(price) ? "VS Players (Premium)" : $"VS Players ({price})";
-            }
-        }
-    
-        if (restorePurchaseButton != null)
-        {
-            restorePurchaseButton.gameObject.SetActive(!isUnlocked);
-            restorePurchaseButton.interactable = isInitialized;
-        }
-    
-        if (purchaseStatusText != null)
-        {
-            purchaseStatusText.text = isUnlocked ? "Multiplayer Unlocked!" : "";
-        }
+        purchaseStatusText.text = isUnlocked ? "Multiplayer Unlocked!" : "";
     }
     
-    private void HandlePurchaseComplete(bool success)
+    private void HandlePurchaseSuccess()
     {
-        UpdatePurchaseUI();
-        
-        if (success)
-        {
-            ShowMessage("Purchase successful!");
-            OnVsPlayersSelected();
-        }
+        UpdatePurchaseStatus();
+        ShowMessage("Purchase successful!");
+        OpenPlayerSetup();
     }
     
-    private void HandlePurchaseFailed(string reason)
+    private void HandlePurchaseError(string error)
     {
         if (purchaseStatusText != null)
-            purchaseStatusText.text = $"Purchase failed: {reason}";
+            purchaseStatusText.text = $"Error: {error}";
         
-        ShowMessage($"Purchase failed: {reason}");
+        ShowMessage($"Purchase failed: {error}");
     }
     
-    private void HandleRestoreComplete()
+    private void HandleRestoreComplete(bool success)
     {
-        UpdatePurchaseUI();
+        UpdatePurchaseStatus();
         
         if (purchaseStatusText != null)
         {
             bool isUnlocked = iapManager != null && iapManager.IsMultiplayerUnlocked;
-            purchaseStatusText.text = isUnlocked ? "Purchases restored!" : "No purchases to restore";
+            purchaseStatusText.text = success && isUnlocked ? "Restored!" : "Nothing to restore";
         }
     }
     
